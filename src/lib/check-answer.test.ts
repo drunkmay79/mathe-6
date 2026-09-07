@@ -167,6 +167,7 @@ const fractionExercise: OfKind<'fraction'> = {
   numerator: 3,
   denominator: 4,
   requireReduced: true,
+  requireExact: false,
 }
 
 const choiceExercise: OfKind<'choice'> = {
@@ -268,6 +269,24 @@ describe('checkAnswer', () => {
     expect(checkAnswer(fractionExercise, '3/4').ok).toBe(true)
     expect(checkAnswer(fractionExercise, '6/8')).toMatchObject({ ok: false, reason: 'not-reduced' })
     expect(checkAnswer(fractionExercise, '2/3')).toMatchObject({ ok: false, reason: 'wrong' })
+  })
+
+  it('с requireExact требует именно ту запись, о которой просили', () => {
+    // «Расширь 1/4 до знаменателя 16»: ответ 1/4 по значению верен,
+    // но задание при этом не выполнено.
+    const erweitern: OfKind<'fraction'> = {
+      ...base,
+      kind: 'fraction',
+      id: 'a9',
+      prompt: { de: 'Erweitere 1/4 auf den Nenner 16.', ru: 'Расширь 1/4 до знаменателя 16.' },
+      numerator: 4,
+      denominator: 16,
+      requireReduced: false,
+      requireExact: true,
+    }
+    expect(checkAnswer(erweitern, '4/16').ok).toBe(true)
+    expect(checkAnswer(erweitern, '1/4')).toMatchObject({ ok: false, reason: 'wrong' })
+    expect(checkAnswer(erweitern, '1/4').note).toContain('16')
   })
 
   it('без requireReduced принимает любую равную дробь', () => {

@@ -82,6 +82,16 @@ export const theoryBlockSchema = z.discriminatedUnion('type', [
     art: z.string().min(1),
     caption: z.string().min(1),
   }),
+  /**
+   * Интерактивный тренажёр: не задание с ответом, а игрушка, в которой можно
+   * покрутить числа и увидеть, как работает правило. `toy` — id из
+   * components/playgrounds.
+   */
+  z.object({
+    type: z.literal('playground'),
+    toy: z.string().min(1),
+    caption: z.string().min(1),
+  }),
   /** Разобранный пример: условие + шаги решения. Beispiel в учебнике. */
   z.object({
     type: z.literal('example'),
@@ -92,6 +102,37 @@ export const theoryBlockSchema = z.discriminatedUnion('type', [
 export type TheoryBlock = z.infer<typeof theoryBlockSchema>
 
 /* ---------------------------------------------------------------- задания */
+
+/**
+ * Картинка к условию: закрашенная часть фигуры или отметка на числовой прямой.
+ * Показывается над полем ответа — то, что в учебнике нарисовано рядом с задачей.
+ */
+export const figureSchema = z.discriminatedUnion('shape', [
+  z.object({
+    shape: z.literal('grid'),
+    /** Всего клеток. */
+    total: z.number().int().positive(),
+    /** Сколько клеток в строке. */
+    cols: z.number().int().positive(),
+    /** Сколько закрашено. */
+    shaded: z.number().int().nonnegative(),
+  }),
+  z.object({
+    shape: z.literal('circle'),
+    total: z.number().int().positive(),
+    shaded: z.number().int().nonnegative(),
+  }),
+  z.object({
+    shape: z.literal('numberline'),
+    from: z.number().int(),
+    to: z.number().int(),
+    /** На сколько долей поделён каждый отрезок между целыми. */
+    parts: z.number().int().positive(),
+    /** Куда показывают стрелки: доли от начала отрезка. */
+    marks: z.array(z.number().int().nonnegative()).min(1),
+  }),
+])
+export type Figure = z.infer<typeof figureSchema>
 
 const exerciseBase = {
   id: slug('id задания'),
@@ -109,6 +150,8 @@ const exerciseBase = {
    * Такие показываются в разминке перед теорией, а не в общем списке.
    */
   focus: z.enum(['mathe', 'sprache']).default('mathe'),
+  /** Картинка к условию — то, что в учебнике нарисовано рядом с задачей. */
+  figure: figureSchema.optional(),
 }
 
 export const exerciseSchema = z.discriminatedUnion('kind', [
@@ -132,6 +175,12 @@ export const exerciseSchema = z.discriminatedUnion('kind', [
       .refine((d) => d !== 0, 'знаменатель не может быть нулём'),
     /** true — засчитываем только сокращённую дробь (6/8 не пройдёт, 3/4 пройдёт). */
     requireReduced: z.boolean().default(false),
+    /**
+     * true — ответ должен совпасть числами, а не только значением.
+     * Нужно для заданий на расширение: на «erweitere 1/4 auf 16» ответ 1/4
+     * по значению верен, но задание не выполнено.
+     */
+    requireExact: z.boolean().default(false),
   }),
   /**
    * Множество чисел: Teiler-Menge, Vielfachen-Menge.
@@ -150,6 +199,17 @@ export const exerciseSchema = z.discriminatedUnion('kind', [
     kind: z.literal('choice'),
     options: z.array(bilingualSchema).min(2),
     correct: z.number().int().nonnegative(),
+  }),
+  /**
+   * Выбрать все подходящие: «отметь числа, которые делятся на 3»,
+   * «закрась нужные клетки». В учебнике этого формата очень много.
+   */
+  z.object({
+    ...exerciseBase,
+    kind: z.literal('pick'),
+    options: z.array(z.string().min(1)).min(2),
+    /** Индексы верных вариантов. */
+    correct: z.array(z.number().int().nonnegative()).min(1),
   }),
   /** Таблица утверждений wahr / falsch. */
   z.object({
@@ -178,6 +238,36 @@ export const exerciseSchema = z.discriminatedUnion('kind', [
     right: z.array(z.object({ id: z.string().min(1), label: z.string().min(1) })).min(2),
     /** Верные пары: [id слева, id справа]. */
     pairs: z.array(z.tuple([z.string().min(1), z.string().min(1)])).min(1),
+  }),
+  /**
+   * Закрасить долю: «Male 3 von 8 Teilen bunt».
+   * Какие именно части закрашены — неважно, важно сколько.
+   */
+  z.object({
+    ...exerciseBase,
+    kind: z.literal('shade'),
+    shape: z.enum(['grid', 'circle']),
+    total: z.number().int().positive(),
+    /** Клеток в строке, только для сетки. */
+    cols: z.number().int().positive().optional(),
+    /** Сколько частей нужно закрасить. */
+    target: z.number().int().positive(),
+  }),
+  /**
+   * Отметить число на числовой прямой: «Trage den Bruch am Zahlenstrahl ein».
+   * Ответ — номер штриха от начала отрезка.
+   */
+  z.object({
+    ...exerciseBase,
+    kind: z.literal('numberline'),
+    from: z.number().int(),
+    to: z.number().int(),
+    /** На сколько долей поделён каждый отрезок между целыми. */
+    parts: z.number().int().positive(),
+    /** Верный штрих: сколько долей от начала. */
+    target: z.number().int().nonnegative(),
+    /** Что именно надо отметить, KaTeX — показывается над прямой. */
+    label: z.string().min(1),
   }),
   /** Короткий текстовый ответ, обычно немецкий термин. */
   z.object({
@@ -278,4 +368,12 @@ export type GlossaryEntry = z.infer<typeof glossaryEntrySchema>
  */
 export function defineChapter(chapter: z.input<typeof chapterSchema>): Chapter {
   return chapterSchema.parse(chapter)
+}
+
+/**
+ * То же для отдельного урока: глава большая, и держать её одним файлом
+ * неудобно — каждая тема лежит своим файлом и проверяется при загрузке.
+ */
+export function defineLesson(lesson: z.input<typeof lessonSchema>): Lesson {
+  return lessonSchema.parse(lesson)
 }

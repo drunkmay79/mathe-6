@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { CircleShape, GridShape, NumberLineShape } from './Figure'
 import { MathExpr } from './MathExpr'
 import type { AutoCheckedExercise } from '@/content/schema'
 import { decodeFlags, decodePairs, encodeFlags, encodePairs } from '@/lib/check-answer'
@@ -19,6 +21,9 @@ const PLACEHOLDER: Record<AutoCheckedExercise['kind'], string> = {
   choice: '',
   truefalse: '',
   match: '',
+  shade: '',
+  numberline: '',
+  pick: '',
 }
 
 const textFieldClass =
@@ -158,6 +163,68 @@ export function AnswerInput({ exercise, value, onChange, disabled, inputId }: An
       )
     }
 
+    case 'pick': {
+      const chosen = new Set(
+        value
+          .split(',')
+          .filter((part) => part !== '')
+          .map(Number),
+      )
+      const toggle = (index: number) => {
+        const next = new Set(chosen)
+        if (next.has(index)) next.delete(index)
+        else next.add(index)
+        onChange([...next].sort((a, b) => a - b).join(','))
+      }
+      return (
+        <div>
+          <p className="ru-text mb-2 text-sm">Отметь все подходящие. Можно несколько.</p>
+          <div className="flex flex-wrap gap-2">
+            {exercise.options.map((option, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => toggle(index)}
+                disabled={disabled}
+                aria-pressed={chosen.has(index)}
+                className={`min-w-14 rounded-xl border px-3 py-2.5 text-lg tabular-nums transition disabled:opacity-60 ${
+                  chosen.has(index)
+                    ? 'border-accent bg-accent text-white'
+                    : 'border-slate-300 hover:border-slate-400'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    case 'shade':
+      return (
+        <ShadeInput
+          shape={exercise.shape}
+          total={exercise.total}
+          cols={exercise.cols ?? exercise.total}
+          disabled={disabled}
+          onChange={onChange}
+        />
+      )
+
+    case 'numberline':
+      return (
+        <NumberLinePicker
+          from={exercise.from}
+          to={exercise.to}
+          parts={exercise.parts}
+          label={exercise.label}
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+        />
+      )
+
     default:
       // number, fraction, set, text — всё это одно текстовое поле.
       return (
@@ -187,4 +254,84 @@ export function AnswerInput({ exercise, value, onChange, disabled, inputId }: An
         </div>
       )
   }
+}
+
+type ShadeInputProps = {
+  shape: 'grid' | 'circle'
+  total: number
+  cols: number
+  disabled: boolean
+  onChange: (value: string) => void
+}
+
+/**
+ * Закрашивание долей. Наружу отдаём только количество закрашенных частей:
+ * в заданиях вида «Male 3 von 8 Teilen bunt» неважно, какие именно закрасили.
+ */
+function ShadeInput({ shape, total, cols, disabled, onChange }: ShadeInputProps) {
+  const [filled, setFilled] = useState<Set<number>>(new Set())
+
+  const toggle = (index: number) => {
+    if (disabled) return
+    const next = new Set(filled)
+    if (next.has(index)) next.delete(index)
+    else next.add(index)
+    setFilled(next)
+    onChange(String(next.size))
+  }
+
+  return (
+    <div>
+      <p className="ru-text mb-2 text-sm">Нажимай на части, чтобы закрасить их.</p>
+      {shape === 'grid' ? (
+        <GridShape total={total} cols={cols} filled={filled} onToggle={toggle} />
+      ) : (
+        <CircleShape total={total} filled={filled} onToggle={toggle} />
+      )}
+      <p className="mt-2 text-sm">
+        Закрашено: <strong className="tabular-nums">{filled.size}</strong> из {total}
+      </p>
+    </div>
+  )
+}
+
+type NumberLinePickerProps = {
+  from: number
+  to: number
+  parts: number
+  label: string
+  value: string
+  disabled: boolean
+  onChange: (value: string) => void
+}
+
+/** Выбор штриха на числовой прямой: ответом становится его номер от начала. */
+function NumberLinePicker({
+  from,
+  to,
+  parts,
+  label,
+  value,
+  disabled,
+  onChange,
+}: NumberLinePickerProps) {
+  const picked = value === '' ? null : Number(value)
+
+  return (
+    <div>
+      <p className="mb-2 flex items-center gap-2 text-sm">
+        <span className="ru-text">Отметь на прямой:</span>
+        <MathExpr expr={label} className="text-lg" />
+      </p>
+      <div className="overflow-x-auto">
+        <NumberLineShape
+          from={from}
+          to={to}
+          parts={parts}
+          picked={picked}
+          onPick={disabled ? undefined : (tick) => onChange(String(tick))}
+        />
+      </div>
+    </div>
+  )
 }

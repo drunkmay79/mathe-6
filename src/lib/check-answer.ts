@@ -223,6 +223,19 @@ export function checkAnswer(exercise: AutoCheckedExercise, raw: string): CheckRe
         actual.numerator === expected.numerator && actual.denominator === expected.denominator
       if (!sameValue) return { ok: false, reason: 'wrong' }
 
+      if (
+        exercise.requireExact &&
+        (parsed.numerator !== exercise.numerator || parsed.denominator !== exercise.denominator)
+      ) {
+        // Значение верное, но задание было именно про запись: расширить или
+        // привести к нужному знаменателю.
+        return {
+          ok: false,
+          reason: 'wrong',
+          note: `Значение верное, но записать нужно дробь со знаменателем ${exercise.denominator}.`,
+        }
+      }
+
       if (exercise.requireReduced && !isReduced(parsed)) {
         return {
           ok: false,
@@ -279,6 +292,36 @@ export function checkAnswer(exercise: AutoCheckedExercise, raw: string): CheckRe
         : { ok: false, reason: 'wrong' }
     }
 
+    case 'pick': {
+      const chosen = new Set(
+        raw
+          .split(',')
+          .filter((part) => part !== '')
+          .map(Number),
+      )
+      const expected = new Set(exercise.correct)
+      const extra = [...chosen].filter((index) => !expected.has(index)).length
+      if (extra > 0) {
+        return {
+          ok: false,
+          reason: 'extra',
+          note: extra === 1 ? 'Одно число лишнее.' : `Лишних отмечено: ${extra}.`,
+        }
+      }
+      const missing = expected.size - chosen.size
+      if (missing > 0) {
+        return {
+          ok: false,
+          reason: 'incomplete',
+          note:
+            missing === 1
+              ? 'Всё отмеченное верно, но одно число ещё не найдено.'
+              : `Всё верно, но не найдено ещё ${missing}.`,
+        }
+      }
+      return { ok: true }
+    }
+
     case 'truefalse': {
       const flags = decodeFlags(raw)
       if (flags.length < exercise.statements.length || flags.some((flag) => flag === null)) {
@@ -318,6 +361,31 @@ export function checkAnswer(exercise: AutoCheckedExercise, raw: string): CheckRe
         }
       }
       return { ok: true }
+    }
+
+    case 'shade': {
+      const shaded = Number(raw)
+      if (!Number.isInteger(shaded)) return { ok: false, reason: 'empty' }
+      if (shaded === exercise.target) return { ok: true }
+      return shaded < exercise.target
+        ? {
+            ok: false,
+            reason: 'incomplete',
+            note: `Закрашено ${shaded}, а нужно ${exercise.target}.`,
+          }
+        : {
+            ok: false,
+            reason: 'extra',
+            note: `Закрашено ${shaded} — это больше, чем нужно.`,
+          }
+    }
+
+    case 'numberline': {
+      const tick = Number(raw)
+      if (!Number.isInteger(tick)) return { ok: false, reason: 'empty' }
+      return tick === exercise.target
+        ? { ok: true }
+        : { ok: false, reason: 'wrong', note: 'Не тот штрих. Посчитай их от начала ещё раз.' }
     }
 
     case 'text': {
@@ -360,6 +428,12 @@ export function formatExpectedAnswer(exercise: Exercise): string {
           return `${leftLabel} — ${rightLabel}`
         })
         .join('; ')
+    case 'pick':
+      return exercise.correct.map((index) => exercise.options[index]).join(', ')
+    case 'shade':
+      return `${exercise.target} из ${exercise.total}`
+    case 'numberline':
+      return `${exercise.target}-й штрих от ${exercise.from}`
     case 'text':
       return exercise.accept[0]
     case 'open':

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { hasIllustration } from '@/components/illustrations'
+import { hasPlayground } from '@/components/playgrounds'
 import { GLOSSARY, hasTerm } from './glossary'
 import { ALL_LESSONS, CHAPTERS } from './index'
 import { chapterSchema } from './schema'
@@ -58,6 +59,17 @@ describe('связи с глоссарием', () => {
       for (const block of lesson.theory) {
         if (block.type !== 'visual') continue
         expect(hasIllustration(block.art), `урок ${lesson.id}: нет рисунка "${block.art}"`).toBe(
+          true,
+        )
+      }
+    }
+  })
+
+  it('все тренажёры уроков существуют', () => {
+    for (const { lesson } of ALL_LESSONS) {
+      for (const block of lesson.theory) {
+        if (block.type !== 'playground') continue
+        expect(hasPlayground(block.toy), `урок ${lesson.id}: нет тренажёра "${block.toy}"`).toBe(
           true,
         )
       }

@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { AnswerInput } from './AnswerInput'
 import { BilingualText } from './BilingualText'
+import { FigureView } from './Figure'
 import { MathExpr } from './MathExpr'
 import { isAutoChecked, LEVELS, type Exercise } from '@/content/schema'
 import { checkAnswer, formatExpectedAnswer, type CheckResult } from '@/lib/check-answer'
@@ -117,6 +118,8 @@ export function ExerciseCard({ lessonId, exercise, number }: ExerciseCardProps) 
       <BilingualText value={exercise.prompt} emphasis />
 
       {exercise.expr && <MathExpr expr={exercise.expr} block className="my-4" />}
+
+      {exercise.figure && <FigureView figure={exercise.figure} />}
 
       {exercise.kind === 'open' ? (
         <OpenAnswer
