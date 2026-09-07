@@ -1,0 +1,33 @@
+# зависимости и сборка
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# кеши инструментов
+.vite/
+.eslintcache
+coverage/
+
+# редакторы и ОС
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# локальные настройки Claude Code
+.claude/settings.local.json
+
+# логи
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Сканы учебника и рабочей тетради — чужой копирайт, в репозиторий не попадают.
+# Лежат локально, из них делается контент в src/content/chapters/.
+material/**
+!material/.gitkeep
+!material/README.md
+!material/INDEX.md

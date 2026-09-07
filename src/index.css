@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+/*
+ * Оформление тетради.
+ *
+ * Два языка на одной странице нужно как-то различать глазом, иначе они
+ * сливаются в кашу. Договорённость по всему приложению:
+ *   немецкий  — основной цвет текста, обычный размер, это «то, что в учебнике»;
+ *   русский   — приглушённый цвет и класс .ru-text, это «пояснение для меня».
+ */
+
+@theme {
+  --color-ink: oklch(0.25 0.03 260);
+  --color-ink-soft: oklch(0.52 0.03 260);
+  --color-paper: oklch(0.985 0.005 100);
+  --color-accent: oklch(0.55 0.16 255);
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    /* Крупнее школьного дефолта: тетрадь читают с планшета и с ноутбука. */
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+  }
+
+  /* Формулы KaTeX не должны рвать вёрстку на узком экране. */
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25rem;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .ru-text {
+    color: var(--color-ink-soft);
+  }
+}
