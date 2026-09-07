@@ -72,6 +72,16 @@ export const theoryBlockSchema = z.discriminatedUnion('type', [
     body: bilingualSchema,
     expr: z.string().min(1).optional(),
   }),
+  /**
+   * Картинка, которая объясняет мысль лучше слов: прыжки по числовой прямой,
+   * прямоугольники из квадратиков. `art` — id из components/illustrations,
+   * `caption` — что на ней происходит, по-русски.
+   */
+  z.object({
+    type: z.literal('visual'),
+    art: z.string().min(1),
+    caption: z.string().min(1),
+  }),
   /** Разобранный пример: условие + шаги решения. Beispiel в учебнике. */
   z.object({
     type: z.literal('example'),
@@ -249,6 +259,12 @@ export const glossaryEntrySchema = z.object({
   plural: z.string().min(1).optional(),
   /** Пример употребления в немецкой формулировке задачи. */
   example: z.string().min(1).optional(),
+  /**
+   * Подсказка для запоминания: от какого слова образовано.
+   * Немецкие математические термины почти все прозрачные — Teiler от teilen,
+   * Zähler от zählen. Увидев это один раз, слово уже не забываешь.
+   */
+  memo: z.string().min(1).optional(),
   category: z.enum(['zahlen', 'geometrie', 'rechnen', 'operatoren', 'allgemein']),
 })
 export type GlossaryEntry = z.infer<typeof glossaryEntrySchema>

@@ -1,5 +1,6 @@
 import { BilingualText } from './BilingualText'
 import { MathExpr } from './MathExpr'
+import { ILLUSTRATIONS } from './illustrations'
 import type { TheoryBlock } from '@/content/schema'
 
 /** Один блок теории. Вид зависит от типа: обычный текст, формула, правило, разбор. */
@@ -19,6 +20,22 @@ export function TheoryBlockView({ block }: { block: TheoryBlock }) {
           )}
         </figure>
       )
+
+    case 'visual': {
+      const Art = ILLUSTRATIONS[block.art]
+      // Рисунка с таким id нет — это ловит тест, до экрана дойти не должно.
+      if (!Art) return null
+      return (
+        <figure className="my-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+            <Art />
+          </div>
+          <figcaption lang="ru" className="mt-3 text-[0.95em]">
+            {block.caption}
+          </figcaption>
+        </figure>
+      )
+    }
 
     case 'rule':
       // Правило в рамке — то, что нужно выучить наизусть.

@@ -33,6 +33,7 @@ const entries: GlossaryEntry[] = [
     ru: 'обыкновенная дробь',
     article: 'der',
     plural: 'Brüche',
+    memo: 'От brechen — ломать. Дробь = отломанная часть целого.',
     category: 'zahlen',
   },
   {
@@ -41,6 +42,7 @@ const entries: GlossaryEntry[] = [
     ru: 'числитель — верхнее число дроби',
     article: 'der',
     plural: 'Zähler',
+    memo: 'От zählen — считать. Числитель считает, сколько частей взяли.',
     category: 'zahlen',
   },
   {
@@ -49,6 +51,7 @@ const entries: GlossaryEntry[] = [
     ru: 'знаменатель — нижнее число дроби',
     article: 'der',
     plural: 'Nenner',
+    memo: 'От nennen — называть. Знаменатель называет, на сколько частей поделили.',
     category: 'zahlen',
   },
   {
@@ -73,6 +76,7 @@ const entries: GlossaryEntry[] = [
     ru: 'простое число',
     article: 'die',
     plural: 'Primzahlen',
+    memo: 'Из простого числа складывается только один прямоугольник — полоска 1 × само число.',
     category: 'zahlen',
   },
   {
@@ -81,6 +85,7 @@ const entries: GlossaryEntry[] = [
     ru: 'делитель',
     article: 'der',
     plural: 'Teiler',
+    memo: 'От глагола teilen — делить.',
     category: 'zahlen',
   },
   {
@@ -89,18 +94,21 @@ const entries: GlossaryEntry[] = [
     ru: 'кратное',
     article: 'das',
     plural: 'Vielfache',
+    memo: 'viel — много. Кратное = «много раз по этому числу».',
     category: 'zahlen',
   },
   {
     id: 'ggt',
     de: 'ggT — größter gemeinsamer Teiler',
     ru: 'НОД — наибольший общий делитель',
+    memo: 'Три буквы — три слова: größter (наибольший), gemeinsamer (общий), Teiler (делитель).',
     category: 'zahlen',
   },
   {
     id: 'kgv',
     de: 'kgV — kleinstes gemeinsames Vielfaches',
     ru: 'НОК — наименьшее общее кратное',
+    memo: 'Так же по первым буквам: kleinstes (наименьшее), gemeinsames (общее), Vielfaches (кратное).',
     category: 'zahlen',
   },
   {
@@ -123,6 +131,7 @@ const entries: GlossaryEntry[] = [
     de: 'teilbar',
     ru: 'делится без остатка',
     example: 'Ist 56 durch 7 teilbar?',
+    memo: 'teilen + -bar, как в английском -able: «делимый».',
     category: 'zahlen',
   },
   {
@@ -131,6 +140,7 @@ const entries: GlossaryEntry[] = [
     ru: 'множество делителей: T₄ = {1; 2; 4}',
     article: 'die',
     example: 'Gib die Teiler-Menge von 28 an.',
+    memo: 'Menge — множество, набор. Отсюда и буква T со скобками.',
     category: 'zahlen',
   },
   {
@@ -139,6 +149,7 @@ const entries: GlossaryEntry[] = [
     ru: 'множество кратных: V₆ = {6; 12; 18; …}',
     article: 'die',
     example: 'Ergänze die Vielfachen-Menge im Heft.',
+    memo: 'Та же Menge, только для кратных: буква V.',
     category: 'zahlen',
   },
   {
@@ -146,6 +157,7 @@ const entries: GlossaryEntry[] = [
     de: 'gerade Zahl',
     ru: 'чётное число — делится на 2',
     article: 'die',
+    memo: 'gerade значит ещё и «прямой», «ровный». Чётное — ровно делится пополам.',
     category: 'zahlen',
   },
   {
@@ -161,6 +173,7 @@ const entries: GlossaryEntry[] = [
     ru: 'сумма цифр числа: у 436 это 4 + 3 + 6 = 13',
     article: 'die',
     example: 'Berechne die Quersumme.',
+    memo: 'quer — поперёк. Складываешь цифры «поперёк» числа.',
     category: 'zahlen',
   },
   {
@@ -169,6 +182,7 @@ const entries: GlossaryEntry[] = [
     ru: 'последняя цифра числа',
     article: 'die',
     example: 'Markiere die Einerziffer der Zahl.',
+    memo: 'Einer — единицы. Цифра, стоящая в разряде единиц.',
     category: 'zahlen',
   },
   {
@@ -184,6 +198,7 @@ const entries: GlossaryEntry[] = [
     de: 'Bruchstrich',
     ru: 'дробная черта',
     article: 'der',
+    memo: 'Strich — черта. Та самая черта, что ломает целое.',
     category: 'zahlen',
   },
   {
@@ -266,12 +281,14 @@ const entries: GlossaryEntry[] = [
     de: 'kürzen',
     ru: 'сокращать дробь',
     example: 'Kürze den Bruch so weit wie möglich.',
+    memo: 'kurz — короткий. Сокращая, делаешь запись короче.',
     category: 'rechnen',
   },
   {
     id: 'erweitern',
     de: 'erweitern',
     ru: 'расширить дробь — умножить числитель и знаменатель на одно и то же число',
+    memo: 'weit — широкий. Расширяя, делаешь числа крупнее.',
     category: 'rechnen',
   },
   { id: 'runden', de: 'runden', ru: 'округлять', category: 'rechnen' },
@@ -312,6 +329,7 @@ const entries: GlossaryEntry[] = [
     id: 'gleichnamig',
     de: 'gleichnamig',
     ru: 'с одинаковым знаменателем',
+    memo: 'gleich — одинаковый, Name — имя. У дробей «одинаковое имя» — знаменатель.',
     category: 'rechnen',
   },
   {

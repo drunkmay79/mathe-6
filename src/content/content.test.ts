@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { hasIllustration } from '@/components/illustrations'
 import { GLOSSARY, hasTerm } from './glossary'
 import { ALL_LESSONS, CHAPTERS } from './index'
 import { chapterSchema } from './schema'
@@ -48,6 +49,17 @@ describe('связи с глоссарием', () => {
     for (const { lesson } of ALL_LESSONS) {
       for (const term of lesson.terms) {
         expect(hasTerm(term), `урок ${lesson.id}: термина "${term}" нет в glossary.ts`).toBe(true)
+      }
+    }
+  })
+
+  it('все рисунки уроков существуют', () => {
+    for (const { lesson } of ALL_LESSONS) {
+      for (const block of lesson.theory) {
+        if (block.type !== 'visual') continue
+        expect(hasIllustration(block.art), `урок ${lesson.id}: нет рисунка "${block.art}"`).toBe(
+          true,
+        )
       }
     }
   })

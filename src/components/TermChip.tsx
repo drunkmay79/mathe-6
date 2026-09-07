@@ -32,9 +32,12 @@ export function TermChip({ id }: TermChipProps) {
         {term.de}
       </span>
       {open && (
-        <span lang="ru" className="ru-text text-sm">
-          {term.ru}
-        </span>
+        <>
+          <span lang="ru" className="ru-text text-sm">
+            {term.ru}
+          </span>
+          {term.memo && <span className="mt-0.5 text-sm text-accent">{term.memo}</span>}
+        </>
       )}
     </button>
   )
