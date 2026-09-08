@@ -1,4 +1,5 @@
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { BuchPage } from './pages/BuchPage'
 import { GlossaryPage } from './pages/GlossaryPage'
 import { HomePage } from './pages/HomePage'
 import { LessonPage } from './pages/LessonPage'
@@ -18,6 +19,9 @@ export function App() {
         <NavLink to="/" end className={navLinkClass}>
           Оглавление
         </NavLink>
+        <NavLink to="/buch" className={navLinkClass}>
+          По учебнику
+        </NavLink>
         <NavLink to="/glossar" className={navLinkClass}>
           Словарь
         </NavLink>
@@ -27,6 +31,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/lesson/:lessonId" element={<LessonPage />} />
+          <Route path="/buch" element={<BuchPage />} />
           <Route path="/glossar" element={<GlossaryPage />} />
           <Route
             path="*"

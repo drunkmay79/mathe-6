@@ -34,6 +34,18 @@ export function HomePage() {
         <ProgressBar solved={solvedTotal} total={TOTAL_EXERCISES} label="Решено заданий всего" />
       </div>
 
+      {/* Домашку задают номером страницы, а не названием темы — с этого и начинают. */}
+      <Link
+        to="/buch"
+        className="block rounded-2xl border-2 border-accent/40 bg-white p-5 transition hover:border-accent"
+      >
+        <p className="text-lg font-semibold">Задали номер страницы?</p>
+        <p className="ru-text mt-1">
+          «Arbeitsheft S. 9, Aufgaben 1–3» — найди страницу в указателе и попадёшь ровно на эти
+          задания.
+        </p>
+      </Link>
+
       {CHAPTERS.map((chapter) => (
         <section key={chapter.id}>
           <h2 className="mb-3 text-xl font-semibold">

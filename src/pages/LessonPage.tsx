@@ -1,19 +1,26 @@
-import { Link, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ExerciseCard } from '@/components/ExerciseCard'
 import { LevelSwitch } from '@/components/LevelSwitch'
 import { PhraseCard } from '@/components/PhraseCard'
 import { ProgressBar } from '@/components/ProgressBar'
 import { TermChip } from '@/components/TermChip'
 import { TheoryBlockView } from '@/components/TheoryBlockView'
-import { findLesson, lessonPath, neighbourLessons, splitExercises } from '@/content'
+import {
+  findLesson,
+  formatPages,
+  lessonPages,
+  lessonPath,
+  neighbourLessons,
+  splitExercises,
+} from '@/content'
 import { LEVELS, type ExerciseLevel, type Lesson } from '@/content/schema'
 import { resetLesson, setLevel, useLessonProgress, useProgress } from '@/lib/progress'
-
-const BOOK_LABEL = { lb: 'Lehrbuch', ah: 'Arbeitsheft' } as const
 
 /** Страница урока: язык задания, слова темы, теория, задания по уровням. */
 export function LessonPage() {
   const { lessonId = '' } = useParams()
+  const [searchParams] = useSearchParams()
   const found = findLesson(lessonId)
 
   if (!found) {
@@ -30,7 +37,15 @@ export function LessonPage() {
   const { chapter, lesson } = found
   const { prev, next } = neighbourLessons(lessonId)
 
-  return <LessonBody chapter={chapter.title.de} lesson={lesson} prev={prev} next={next} />
+  return (
+    <LessonBody
+      chapter={chapter.title.de}
+      lesson={lesson}
+      prev={prev}
+      next={next}
+      focusId={searchParams.get('ex')}
+    />
+  )
 }
 
 type LessonRef = NonNullable<ReturnType<typeof findLesson>>
@@ -40,15 +55,18 @@ type LessonBodyProps = {
   lesson: Lesson
   prev?: LessonRef
   next?: LessonRef
+  /** Задание, на которое пришли по ссылке из указателя «По учебнику». */
+  focusId: string | null
 }
 
 /**
  * Вынесено отдельным компонентом, чтобы хуки вызывались всегда,
  * а не после проверки «урок найден» — иначе порядок хуков поедет.
  */
-function LessonBody({ chapter, lesson, prev, next }: LessonBodyProps) {
+function LessonBody({ chapter, lesson, prev, next, focusId }: LessonBodyProps) {
   const { preferences } = useProgress()
   const { sprache, mathe } = splitExercises(lesson)
+  const pages = lessonPages(lesson)
 
   const counts = Object.fromEntries(
     LEVELS.map((level) => [
@@ -57,18 +75,30 @@ function LessonBody({ chapter, lesson, prev, next }: LessonBodyProps) {
     ]),
   ) as Record<ExerciseLevel, number>
 
-  // Если на сохранённом уровне заданий нет, показываем первый непустой —
+  // Пришли по ссылке на конкретное задание — показываем его уровень,
+  // иначе сохранённый. Если на сохранённом заданий нет, берём первый непустой:
   // пустой экран выглядит как поломка, а не как выбор.
+  const targeted = focusId ? mathe.find((exercise) => exercise.id === focusId) : undefined
   const level =
-    counts[preferences.level] > 0
+    targeted?.level ??
+    (counts[preferences.level] > 0
       ? preferences.level
-      : (LEVELS.find((item) => counts[item.id] > 0)?.id ?? preferences.level)
+      : (LEVELS.find((item) => counts[item.id] > 0)?.id ?? preferences.level))
 
   const visible = mathe.filter((exercise) => exercise.level === level)
   const { solved, total } = useLessonProgress(
     lesson.id,
     visible.map((exercise) => exercise.id),
   )
+
+  useEffect(() => {
+    if (!focusId) return
+    // Даём карточкам отрисоваться, потом подводим к нужной.
+    const timer = window.setTimeout(() => {
+      document.getElementById(`ex-${focusId}`)?.scrollIntoView({ block: 'start' })
+    }, 60)
+    return () => window.clearTimeout(timer)
+  }, [focusId, lesson.id])
 
   return (
     <article className="space-y-8">
@@ -81,9 +111,21 @@ function LessonBody({ chapter, lesson, prev, next }: LessonBodyProps) {
           {lesson.title.ru}
         </p>
         <p className="mt-3">{lesson.summary}</p>
-        {lesson.source && (
-          <p className="ru-text mt-2 text-sm">
-            По учебнику: {BOOK_LABEL[lesson.source.book]}, S. {lesson.source.page}
+
+        {(pages.lb.length > 0 || pages.ah.length > 0) && (
+          <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            {pages.lb.length > 0 && (
+              <span>
+                <span className="ru-text">Учебник:</span>{' '}
+                <strong>S. {formatPages(pages.lb)}</strong>
+              </span>
+            )}
+            {pages.ah.length > 0 && (
+              <span>
+                <span className="ru-text">Тетрадь:</span>{' '}
+                <strong>S. {formatPages(pages.ah)}</strong>
+              </span>
+            )}
           </p>
         )}
       </header>
@@ -114,6 +156,7 @@ function LessonBody({ chapter, lesson, prev, next }: LessonBodyProps) {
                   lessonId={lesson.id}
                   exercise={exercise}
                   number={index + 1}
+                  highlighted={exercise.id === focusId}
                 />
               ))}
             </div>
@@ -164,6 +207,7 @@ function LessonBody({ chapter, lesson, prev, next }: LessonBodyProps) {
               lessonId={lesson.id}
               exercise={exercise}
               number={index + 1}
+              highlighted={exercise.id === focusId}
             />
           ))}
         </div>

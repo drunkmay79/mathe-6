@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { hasIllustration } from '@/components/illustrations'
 import { hasPlayground } from '@/components/playgrounds'
 import { GLOSSARY, hasTerm } from './glossary'
-import { ALL_LESSONS, CHAPTERS } from './index'
+import { ALL_LESSONS, CHAPTERS, SOURCE_PAGES, formatPages } from './index'
 import { chapterSchema } from './schema'
 
 /**
@@ -42,6 +42,43 @@ describe('структура контента', () => {
       const ids = lesson.exercises.map((exercise) => exercise.id)
       expect(new Set(ids).size, `урок ${lesson.id}`).toBe(ids.length)
     }
+  })
+})
+
+describe('указатель по учебнику', () => {
+  // Домашку задают номером страницы. Если указатель врёт, приложение
+  // становится бесполезным именно в тот момент, когда оно нужнее всего.
+  it('в указателе есть страницы обеих книг', () => {
+    expect(SOURCE_PAGES.some((page) => page.book === 'lb')).toBe(true)
+    expect(SOURCE_PAGES.some((page) => page.book === 'ah')).toBe(true)
+  })
+
+  it('каждая запись указателя ведёт на задание своего урока', () => {
+    for (const page of SOURCE_PAGES) {
+      for (const entry of page.entries) {
+        expect(
+          entry.lesson.exercises.includes(entry.exercise),
+          `S. ${page.page}: задание ${entry.exercise.id} не из урока ${entry.lesson.id}`,
+        ).toBe(true)
+        expect(entry.source.page).toBe(page.page)
+        expect(entry.source.book).toBe(page.book)
+      }
+    }
+  })
+
+  it('страницы не повторяются и идут по возрастанию внутри книги', () => {
+    for (const book of ['lb', 'ah'] as const) {
+      const pages = SOURCE_PAGES.filter((page) => page.book === book).map((page) => page.page)
+      expect(new Set(pages).size).toBe(pages.length)
+      expect([...pages].sort((a, b) => a - b)).toEqual(pages)
+    }
+  })
+
+  it('подряд идущие страницы записываются диапазоном', () => {
+    expect(formatPages([8, 9, 10])).toBe('8–10')
+    expect(formatPages([2, 4, 5])).toBe('2, 4–5')
+    expect(formatPages([7])).toBe('7')
+    expect(formatPages([])).toBe('')
   })
 })
 

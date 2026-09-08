@@ -18,6 +18,8 @@ type ExerciseCardProps = {
   exercise: Exercise
   /** Номер задания в списке, для заголовка. */
   number: number
+  /** Пришли сюда по ссылке из указателя «По учебнику» — подсвечиваем карточку. */
+  highlighted?: boolean
 }
 
 function feedbackText(result: CheckResult): string {
@@ -53,7 +55,12 @@ const BOOK_LABEL = { lb: 'Lehrbuch', ah: 'Arbeitsheft' } as const
  * подсказки, которые открываются по одной, либо разбор — это гарантирует
  * тест в content.test.ts. Смысл в том, чтобы ученица не застревала одна.
  */
-export function ExerciseCard({ lessonId, exercise, number }: ExerciseCardProps) {
+export function ExerciseCard({
+  lessonId,
+  exercise,
+  number,
+  highlighted = false,
+}: ExerciseCardProps) {
   const inputId = useId()
   const state = useExerciseState(lessonId, exercise.id)
   const [value, setValue] = useState('')
@@ -92,9 +99,10 @@ export function ExerciseCard({ lessonId, exercise, number }: ExerciseCardProps) 
 
   return (
     <section
-      className={`rounded-2xl border p-5 transition ${
+      id={`ex-${exercise.id}`}
+      className={`scroll-mt-4 rounded-2xl border p-5 transition ${
         solved ? 'border-emerald-300 bg-emerald-50/60' : 'border-slate-200 bg-white'
-      }`}
+      } ${highlighted ? 'ring-4 ring-accent/30' : ''}`}
       aria-labelledby={`${inputId}-title`}
     >
       <header className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -108,7 +116,8 @@ export function ExerciseCard({ lessonId, exercise, number }: ExerciseCardProps) 
           {solved && <span className="ml-2 text-emerald-600">✓ gelöst</span>}
         </h3>
         {exercise.source && (
-          <span className="text-xs text-ink-soft">
+          // Видно с одного взгляда: ученица сверяет это с тем, что задали в школе.
+          <span className="rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-ink-soft">
             {BOOK_LABEL[exercise.source.book]} S. {exercise.source.page}
             {exercise.source.task ? `, Aufg. ${exercise.source.task}` : ''}
           </span>
