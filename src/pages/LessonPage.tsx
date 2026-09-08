@@ -93,11 +93,15 @@ function LessonBody({ chapter, lesson, prev, next, focusId }: LessonBodyProps) {
 
   useEffect(() => {
     if (!focusId) return
-    // Даём карточкам отрисоваться, потом подводим к нужной.
-    const timer = window.setTimeout(() => {
-      document.getElementById(`ex-${focusId}`)?.scrollIntoView({ block: 'start' })
-    }, 60)
-    return () => window.clearTimeout(timer)
+    const scroll = () => document.getElementById(`ex-${focusId}`)?.scrollIntoView({ block: 'start' })
+    // Дважды: сразу и ещё раз, когда дорисуются формулы и картинки выше.
+    // Иначе карточка успевает уехать за верхний край экрана.
+    const first = window.setTimeout(scroll, 60)
+    const second = window.setTimeout(scroll, 400)
+    return () => {
+      window.clearTimeout(first)
+      window.clearTimeout(second)
+    }
   }, [focusId, lesson.id])
 
   return (

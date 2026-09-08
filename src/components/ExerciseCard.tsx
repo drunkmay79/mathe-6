@@ -100,7 +100,7 @@ export function ExerciseCard({
   return (
     <section
       id={`ex-${exercise.id}`}
-      className={`scroll-mt-4 rounded-2xl border p-5 transition ${
+      className={`scroll-mt-6 rounded-2xl border p-5 transition ${
         solved ? 'border-emerald-300 bg-emerald-50/60' : 'border-slate-200 bg-white'
       } ${highlighted ? 'ring-4 ring-accent/30' : ''}`}
       aria-labelledby={`${inputId}-title`}
